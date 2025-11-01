@@ -1,0 +1,110 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users                 User[]
+  financingApplications FinancingApplication[]
+  invoices              Invoice[]
+  contracts             Contract[]
+  chatMessages          ChatMessage[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  orgId        String
+  email        String   @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  organization          Organization           @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  financingApplications FinancingApplication[]
+  invoices              Invoice[]
+  chatMessages          ChatMessage[]
+
+  @@index([orgId])
+}
+
+model FinancingApplication {
+  id            String   @id @default(cuid())
+  orgId         String
+  userId        String
+  companyName   String
+  cardBrand     String
+  cardLast4     String
+  cardTokenStub String
+  invoiceAmount Decimal
+  durationDays  Int
+  createdAt     DateTime @default(now())
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@index([userId])
+}
+
+model Invoice {
+  id         String   @id @default(cuid())
+  orgId      String
+  userId     String
+  filename   String
+  filepath   String
+  mimeType   String
+  amount     Decimal?
+  status     String   @default("UPLOADED") // UPLOADED | CONTRACTED
+  uploadedAt DateTime @default(now())
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contract     Contract?
+
+  @@index([orgId])
+  @@index([userId])
+  @@index([status])
+}
+
+model Contract {
+  id           String   @id @default(cuid())
+  orgId        String
+  invoiceId    String   @unique
+  contractId   String
+  contractHash String
+  createdAt    DateTime @default(now())
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  invoice      Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  orgId     String
+  userId    String
+  role      String   // user | assistant
+  content   String
+  createdAt DateTime @default(now())
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@index([userId])
+  @@index([createdAt])
+}
