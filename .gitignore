@@ -1,0 +1,26 @@
+# macOS system files
+.DS_Store
+backend/.DS_Store
+
+# Python environment / secrets
+backend/SingleAgent/.env
+
+# Python bytecode
+**/__pycache__/
+**/*.py[cod]
+**/*.so
+
+# Optional: Ignore editor backups / swap files
+*.swp
+*.swo
+
+# Ignore virtual environment folders if you have any
+venv/
+env/
+myenv/
+
+# Ignore logs
+*.log
+
+# Ignore generated files you don't need
+__pycache__/
